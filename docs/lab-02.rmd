@@ -240,10 +240,8 @@ Manip_Pop <- Population_Estimates %>%
   
   
   
-## I'm afraid my experience with weighted mean centers is zero and I'm not really sure
-## how the summation is supposed to work. Hopefully I can get some guidance about how
-## they work after class and finish this.
-```{r}
+## This plot is for the weighted average of COVID cases across the US.
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 #Extra credit attempt: weighted mean center
 #import spatial data
 County_Centroids <- read_csv("../data/county-centroids.csv")
