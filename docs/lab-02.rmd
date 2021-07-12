@@ -18,22 +18,18 @@ library(zoo)
 library(kableExtra)
 library(readr)
 library(maps)
-
 url <- "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv"
-
 COVID <- read_csv(url)
-
 target_state <- "California"
-
 #for reading in population data from a file in data
 #so, because the current working directory of this chunk is the /docs folder
 #I have to establish an absolute path since the pop estimate is in the data
 #folder which is in a different folder in geog-13-labs
-Population_Estimates = read_excel("~/github/geog-13-labs/data/PopulationEstimates.xls")
-
-
+Population_Estimates = read_excel("../data/PopulationEstimates.xls")
 #selection of state for question 2
 facet_states = c("New York", "California", "Louisiana", "Florida")
+
+
 
 ```
 
@@ -45,10 +41,8 @@ Analyzed_Data <- COVID %>%
   group_by(county) %>% 
   mutate(new_cases = cases - lag(cases)) %>% 
   ungroup()
-
 Daily_Data <- Analyzed_Data %>% 
   filter(date == max(date))
-
 ```
 
 ```{r, echo=TRUE}
@@ -56,37 +50,29 @@ Daily_Data <- Analyzed_Data %>%
 Most_County_Cum_Cases <- Daily_Data %>% 
   slice_max(cases, n = 5) %>% 
   select(county, cases)
-
 Most_County_Daily_Cases <- Daily_Data %>% 
   slice_max(new_cases, n = 5) %>% 
   filter(new_cases > 0) %>% 
   arrange(-new_cases) %>%
   select(county, new_cases)
-
 print_cum <- Most_County_Cum_Cases %>% #print a nice table for daily, cumulative cases
   kable(col.names = c("County", "Cases"),
         caption = "Daily Cumulative Cases",
         format.args = list(big.mark = ',')) %>% 
   kable_styling("striped", full_width = TRUE, font_size = 16)
 (print_cum)
-
 print_daily <- Most_County_Daily_Cases %>% #print a nice table for daily cases
   kable(col.names = c("County", "Cases"),
         caption = "Daily Cases",
         format.args = list(big.mark = ',')) %>% 
   kable_styling("striped", full_width = TRUE, font_size = 16)
-
 (print_daily)
-
 ```
 
 ```{r, echo=TRUE, include=FALSE}
 #new code chunk to join the population estimate table to the covid data
-
 #rename the insane paragraph long fips column name
 names(Population_Estimates)[1] <- "fips"
-
-
 #join pop estimates and daily data based on fips number
 Cum_Cases_Per_Cap <- Analyzed_Data %>% 
   filter(date == max(date)) %>% 
@@ -95,9 +81,6 @@ Cum_Cases_Per_Cap <- Analyzed_Data %>%
   mutate(cum_cases_per_cap = cases / as.numeric(...20)) %>% 
   slice_max(cum_cases_per_cap, n = 5) %>% 
   select(county, cum_cases_per_cap)
-
-
-
 #join pop estimates and daily data based on fips number
 New_Cases_Per_Cap <- Daily_Data %>% 
   left_join(Population_Estimates, by = c("fips" = "fips")) %>% 
@@ -105,14 +88,12 @@ New_Cases_Per_Cap <- Daily_Data %>%
   mutate(new_cases_per_cap = new_cases / as.numeric(...20)) %>% 
   slice_max(new_cases_per_cap, n = 5) %>% 
   select(county, new_cases_per_cap)
-
 ```
 
 
 
 ```{r, echo=TRUE, message=FALSE}
 #this code chunk if for getting the last 14 days average
-
 Average_14_Day <- Analyzed_Data %>% 
   left_join(Population_Estimates, by = c("fips" = "fips")) %>% 
   filter(date > max(date) - 14) %>% 
@@ -121,41 +102,33 @@ Average_14_Day <- Analyzed_Data %>%
   ungroup() %>% 
   group_by(state) %>% 
   summarize(total_14_day_average = sum(total_cases_per_100k / 14))
-
 print_avg <- Average_14_Day %>% 
   kable(col.names = c("State", "Cases Per 100k"),
         caption = "Last 14 day average of cases per 100,000 people") %>% 
   kable_material_dark() %>% 
   kable_styling(full_width = FALSE, font_size = 20, position = "left")
-
 (print_avg)
 ```
 
 
 ```{r, echo=TRUE, include=FALSE}
 #calculating the variables needed for the report
-
 #total cumulative cases
 total_state_cases <- Daily_Data %>% 
   group_by(state) %>% 
   summarise(total = sum(cases, na.rm = TRUE)) %>% 
   ungroup()
 total_cases = as.numeric(total_state_cases[2])
-
 #total new cases
 total_new_state_cases <- Daily_Data %>% 
   group_by(state) %>% 
   summarise(total = sum(new_cases, na.rm = TRUE)) %>% 
   ungroup()
 total_new_cases = as.numeric(total_new_state_cases[2])
-
 #for printing the current date
 recent_date <- as.Date(Daily_Data$date[1])
-
 #cast as character cause rmarkdown prints numerics in scientific notation
 tot_cases = as.character(total_cases)
-
-
 #total safe counties
 #redo the whole average 14 day calculation without summarizing to state
 Average_14_Day_County <- Analyzed_Data %>% 
@@ -168,10 +141,8 @@ Average_14_Day_County <- Analyzed_Data %>%
   summarize(total_14_day_average_county = sum(total_cases_per_100k_county / 14)) %>% 
   ungroup() %>% 
   filter(total_14_day_average_county < 100)
-
 #number of safe counties
 safe_counties = nrow(Average_14_Day_County)
-
 ```
 
 
@@ -211,14 +182,12 @@ New_State_Cases %>%
        x = "Date",
        y = "Cases",
        subtitle = "Data from NY Times COVID cumulative count")
-
 ```
 
 ### This can be misleading, so let's look at the data when ajusted by total population.
 
 ```{r echo=TRUE, message=FALSE, results='hide', warning=FALSE}
 #redo new state case and plot without doing the roll 7
-
 New_State_Cases_Per_Cap <- COVID %>% 
   filter(state == c(facet_states)) %>% 
   filter(county != "Unknown") %>% 
@@ -229,7 +198,6 @@ New_State_Cases_Per_Cap <- COVID %>%
   group_by(state, date) %>% 
   summarise(total_daily_state_cases = sum(new_cases)) %>% 
   ungroup()
-
 Manip_Pop_Raw <- Population_Estimates %>% 
   right_join(New_State_Cases_Per_Cap, by = c("...3" = "state")) %>% 
   filter(total_daily_state_cases != "NA") %>% 
@@ -242,7 +210,6 @@ Manip_Pop_Raw <- Population_Estimates %>%
        x = "Date",
        y = "Cases Per Cap",
        subtitle = "Data from NY Times COVID cumulative count")
-
 (Manip_Pop_Raw)
   
 ```
@@ -251,10 +218,7 @@ Manip_Pop_Raw <- Population_Estimates %>%
 
 ```{r, eval=TRUE, echo=TRUE, message=FALSE}
 #this code chunk is about doin stuff with the population and what now. per kappita, im tired
-
-
 #let's manipulate population estimate first
-
 Manip_Pop <- Population_Estimates %>% 
   right_join(New_State_Cases, by = c("...3" = "state")) %>% 
   filter(roll_7 != "NA") %>% 
@@ -267,7 +231,6 @@ Manip_Pop <- Population_Estimates %>%
        x = "Date",
        y = "Cases Per Cap Avg",
        subtitle = "Data from NY Times COVID cumulative count")
-
 (Manip_Pop)
   
 ```
@@ -282,12 +245,9 @@ Manip_Pop <- Population_Estimates %>%
 ## they work after class and finish this.
 ```{r}
 #Extra credit attempt: weighted mean center
-
 #import spatial data
 County_Centroids <- read_csv("~/github/geog-13-labs/data/county-centroids.csv")
-
 Land_Data_States <- read.csv("~/github/geog-13-labs/data/landdata-states.csv")
-
 #Start by adding geospatial data to covid data via fips
 Geo_COVID_Data <- COVID %>% 
   left_join(County_Centroids, by = c("fips" = "fips")) %>% 
@@ -311,13 +271,7 @@ Geo_COVID_Data <- COVID %>%
   ggplot(aes(x = weighted_mean_X, y = weighted_mean_Y)) +
   geom_point(col = "red") +
   borders("state", fill = "gray90", colour = "white")
-
 (Geo_COVID_Data)
-
-
 ```
   
   
-
-
-
