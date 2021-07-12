@@ -246,31 +246,29 @@ Manip_Pop <- Population_Estimates %>%
 ```{r}
 #Extra credit attempt: weighted mean center
 #import spatial data
-County_Centroids <- read_csv("~/github/geog-13-labs/data/county-centroids.csv")
-Land_Data_States <- read.csv("~/github/geog-13-labs/data/landdata-states.csv")
+County_Centroids <- read_csv("../data/county-centroids.csv")
 #Start by adding geospatial data to covid data via fips
 Geo_COVID_Data <- COVID %>% 
   left_join(County_Centroids, by = c("fips" = "fips")) %>% 
   filter(LON != "NA") %>% 
   filter(county != "Unknown") %>% 
-  mutate(month = format(date, "%m")) %>% 
-  group_by(month) %>% 
-  ungroup() %>% 
-  group_by(fips) %>% 
-  mutate(new_cases = cases - lag(cases)) %>% 
-  ungroup() %>% 
-  filter(new_cases != "NA") %>% 
-  mutate(monthly_cases_total = sum(new_cases, na.rm = TRUE)) %>% 
   group_by(date) %>% 
-  mutate(daily_cases_total = sum(cases, na.rm = TRUE)) %>% 
-  summarise(weighted_mean_X = sum(LON * new_cases, na.rm = TRUE) / daily_cases_total, 
-            weighted_mean_Y = sum(LAT * new_cases, na.rm = TRUE) / daily_cases_total,
-            daily_cases_total = daily_cases_total,
-            monthy_cases_total = monthly_cases_total) %>% 
+  summarise(weighted_mean_X = sum(LON * cases, na.rm = TRUE) / sum(cases, na.rm = TRUE), 
+            weighted_mean_Y = sum(LAT * cases, na.rm = TRUE) / sum(cases, na.rm = TRUE),
+            daily_cases_total = sum(cases, na.rm = TRUE)) %>% 
   ungroup() %>% 
-  ggplot(aes(x = weighted_mean_X, y = weighted_mean_Y)) +
-  geom_point(col = "red") +
-  borders("state", fill = "gray90", colour = "white")
+  mutate(m = as.factor(format(date, "%m")))
+
+ggplot() +
+  borders("state", fill = "gray90", colour = "white") +
+  geom_point(data = Geo_COVID_Data, aes(x = weighted_mean_X, y = weighted_mean_Y, col = m, size = daily_cases_total))+
+  labs(title = "Weighted Mean of US COVID Cases",
+     x = "Longitude",
+     y = "Latitude",
+     subtitle = "US Boundaries Data",
+     color = "Month",
+     size = "Cases")
+  
 (Geo_COVID_Data)
 ```
   
