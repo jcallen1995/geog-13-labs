@@ -145,14 +145,17 @@ Average_14_Day_County <- Analyzed_Data %>%
 safe_counties = nrow(Average_14_Day_County)
 ```
 
+****
 
+<br><br>
 
 
 # The total number of cases in `r (target_state)`is `r (tot_cases)` on `r (recent_date)`.    
 # The total number of new cases on `r (recent_date)` is `r (total_new_cases)`.  
 # The total number of safe counties in `r (target_state)` is `r (safe_counties)`.  
   
-  
+****
+<br><br>
   
 #### Now let's look at 4 states comparing new cases.
 
@@ -183,6 +186,9 @@ New_State_Cases %>%
        y = "Cases",
        subtitle = "Data from NY Times COVID cumulative count")
 ```
+  
+****  
+<br> 
 
 ### This can be misleading, so let's look at the data when ajusted by total population.
 
@@ -213,7 +219,8 @@ Manip_Pop_Raw <- Population_Estimates %>%
 (Manip_Pop_Raw)
   
 ```
-
+<br><br>  
+  
 #### This is helpful, but finding the 7 day average will be more comparable to our previous plot.
 
 ```{r, eval=TRUE, echo=TRUE, message=FALSE}
@@ -234,11 +241,15 @@ Manip_Pop <- Population_Estimates %>%
 (Manip_Pop)
   
 ```
-
+<br><br>  
+  
 ### As can be seen through this second plot what takes into account the number of cases
-### in relation to the total population, the rates are much more comparable.
+### in relation to the total population, the rates are much more comparable.  
+ 
+****
   
   
+<br><br><br>  
   
 ## This plot is for the weighted average of COVID cases across the US.
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
@@ -267,7 +278,7 @@ ggplot() +
      color = "Month",
      size = "Cases")
   
-(Geo_COVID_Data)
+
 ```
   
   
